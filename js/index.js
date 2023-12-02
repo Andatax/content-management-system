@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
-const DataBaseTracker = require("./constructor");
+const DataBaseTracker = require("./constructorViewData");
+const { DataAdder, RoleAdder, EmployeeAdder, EmployeeUpdater } = require("./constructorAddData.js");
 function mainMenu() {
 	inquirer
 		.prompt({
@@ -29,12 +30,20 @@ function mainMenu() {
 					dataBaseTracker.viewDataBase("employees", mainMenu);
 					break;
 				case "Add a department":
+					const departmentAdder = new DataAdder(connection, mainMenu);
+					departmentAdder.promptUser();
 					break;
 				case "Add a role":
+					const roleAdder = new RoleAdder(connection, mainMenu);
+					roleAdder.promptUser();
 					break;
 				case "Add an employee":
+					const employeeAdder = new EmployeeAdder(connection, mainMenu);
+					employeeAdder.promptUser();
 					break;
 				case "Update an employee role":
+					const employeeUpdater = new EmployeeUpdater(connection, mainMenu);
+					employeeUpdater.promptUser();
 					break;
 				case "Exit":
 					connection.end();
@@ -43,3 +52,5 @@ function mainMenu() {
 			}
 		});
 }
+
+module.exports = mainMenu;
