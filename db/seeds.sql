@@ -11,7 +11,7 @@ INSERT INTO roles (id, title, salary, department_id) VALUES
   (4,'Financial Analyst', 70000.00, 3),
   (5,'HR Coordinator', 55000.00, 4);
 
-INSERT INTO employees (id, first_name, last_name, role_id, manager_id) VALUES
+INSERT INTO employees (id, first_name, last_name,role_id, manager_id) VALUES
   (1,'John', 'Smith', 1, null),
   (2,'Jane', 'Smith', 2, 1),
   (3,'Bob', 'Johnson', 3, 3),
