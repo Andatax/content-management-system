@@ -57,7 +57,8 @@ class RoleAdder extends DataAdder {
 	}
 
 	addDataToDatabase({ title, salary, department }) {
-		const query = "INSERT INTO roles (title, salary, department) VALUES (?, ?, ?)";
+		// Assuming 'department' is the department ID
+		const query = "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)";
 		this.connection.query(query, [title, salary, department], err => {
 			if (err) throw err;
 			console.log("Role added successfully!");
