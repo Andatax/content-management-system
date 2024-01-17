@@ -25,7 +25,8 @@ const {
     `,
 	insertDepartment: "INSERT INTO departments (name) VALUES (?)",
 	insertRole: "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)",
-	insertEmployee: "INSERT INTO employees (first_name, last_name, manager_id) VALUES (?, ?, ?)",
+	insertEmployee:
+		"INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
 };
 
 async function mainMenu() {
@@ -198,23 +199,26 @@ async function addEmployee() {
 				message: "Select the department for the employee:",
 				choices: departments,
 			},
+			{
+				name: "manager_id",
+				type: "input",
+				message: "Enter the manager ID (optional, press Enter to skip):",
+				default: null,
+				filter: input => (input === "" ? null : input),
+			},
 		]);
-
-		// Log the selected department and its properties
 		const selectedDepartment = existingDepartments.find(
 			department => department.name === answer.department
 		);
 		console.log("Selected Department:", selectedDepartment);
 
-		// Ensure role_id is defined and valid
 		if (selectedDepartment && selectedDepartment.id) {
 			await connection.execute(insertEmployee, [
 				answer.first_name,
 				answer.last_name,
-				selectedDepartment.id, // Use selected department's ID
+				selectedDepartment.id,
 				answer.manager_id,
 			]);
-
 			console.log("Employee added successfully!");
 			mainMenu();
 		} else {
