@@ -181,6 +181,11 @@ async function addEmployee() {
 	try {
 		const [existingDepartments] = await connection.execute(viewAllDepartments);
 		const departments = existingDepartments.map(department => department.name);
+		const [managers] = await connection.execute(viewAllEmployees);
+		const managerChoices = managers.map(manager => ({
+			name: `${manager.first_name} ${manager.last_name} (ID: ${manager.id})`,
+			value: manager.id,
+		}));
 
 		const answer = await inquirer.prompt([
 			{
@@ -201,12 +206,13 @@ async function addEmployee() {
 			},
 			{
 				name: "manager_id",
-				type: "input",
-				message: "Enter the manager ID (optional, press Enter to skip):",
+				type: "list",
+				message: "Select the manager for the employee (optional, press Enter to skip):",
+				choices: [...managerChoices, { name: "None", value: null }],
 				default: null,
-				filter: input => (input === "" ? null : input),
 			},
 		]);
+
 		const selectedDepartment = existingDepartments.find(
 			department => department.name === answer.department
 		);
@@ -226,24 +232,87 @@ async function addEmployee() {
 			mainMenu();
 		}
 	} catch (err) {
-		console.error("Error adding employee:", err);
+		console.error(err);
 		mainMenu();
 	}
 }
 
 async function updateEmployeeRole() {
 	try {
+		const [existingEmployees] = await connection.execute(viewAllEmployees);
+		const employeeChoices = existingEmployees.map(employee => ({
+			name: `${employee.first_name} ${employee.last_name}`,
+			value: employee.id,
+		}));
 		const answer = await inquirer.prompt({
 			name: "employeeId",
-			type: "input",
-			message: "Enter the ID of the employee you want to update:",
+			type: "list",
+			message: "Select the employee you want to update:",
+			choices: employeeChoices,
 		});
-		console.log("Update employee role logic goes here");
-		mainMenu();
+		const [existingEmployee] = await connection.execute("SELECT * FROM employees WHERE id = ?", [
+			answer.employeeId,
+		]);
+		if (existingEmployee.length > 0) {
+			const [existingDepartments] = await connection.execute(viewAllDepartments);
+			const departments = existingDepartments.map(department => department.name);
+
+			const [existingEmployees] = await connection.execute(viewAllEmployees);
+			const employeeChoices = existingEmployees.map(employee => ({
+				name: `${employee.first_name} ${employee.last_name}`,
+				value: employee.id,
+			}));
+			const updateOptions = await inquirer.prompt([
+				{
+					name: "first_name",
+					type: "input",
+					message: "Enter the new first name of the employee:",
+					default: existingEmployee[0].first_name,
+				},
+				{
+					name: "last_name",
+					type: "input",
+					message: "Enter the new last name of the employee:",
+					default: existingEmployee[0].last_name,
+				},
+				{
+					name: "department",
+					type: "list",
+					message: "Select the new department for the employee:",
+					choices: departments,
+				},
+				{
+					name: "manager_id",
+					type: "list",
+					message: "Select the new manager for the employee:",
+					choices: [...employeeChoices, { name: "None", value: null }],
+					default: existingEmployee[0].manager_id,
+				},
+			]);
+
+			const selectedDepartment = existingDepartments.find(
+				department => department.name === updateOptions.department
+			);
+			await connection.execute(
+				"UPDATE employees SET first_name = ?, last_name = ?, role_id = ?, manager_id = ? WHERE id = ?",
+				[
+					updateOptions.first_name,
+					updateOptions.last_name,
+					selectedDepartment.id,
+					updateOptions.manager_id,
+					answer.employeeId,
+				]
+			);
+
+			console.log("Employee updated successfully!");
+		} else {
+			console.log("Employee not found.");
+		}
 	} catch (err) {
 		console.error("Error updating employee role:", err);
+	} finally {
 		mainMenu();
 	}
 }
 
-mainMenu();
+`mainMenu();
